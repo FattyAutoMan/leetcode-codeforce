@@ -279,13 +279,6 @@ public void bubbleSort(int arr[]) {
 
 ### 希尔排序
 
-### 简便函数
-
-```java
-accumulate(stk.begin(), stk.end(), 0);
-Character.isDigit(s.charAt(i));
-```
-
 ### 编码
 
 https://www.cnblogs.com/liujinhong/p/5995946.html
@@ -342,7 +335,16 @@ String str = "张三hi" ;//unicode 2 2 1 1
 
 length信息但有可能 2 1 1 2啊，如何正确读到“三”？
 
-## Arrays.sort()对int[]实现逆排序
+## 简便函数
+
+### 累加，字符判断
+
+```java
+accumulate(stk.begin(), stk.end(), 0);
+Character.isDigit(s.charAt(i));
+```
+
+### Arrays.sort()对Integer[]实现逆排序
 
 ```java
         // 倒序排列
@@ -357,9 +359,82 @@ length信息但有可能 2 1 1 2啊，如何正确读到“三”？
         });
 ```
 
-对于int[]的数据进行逆排序，运算
+### 对于int[]的数据进行逆排序
+
+使用数组的流运算
 
 ```java
 nums = Arrays.stream(nums).boxed().sorted((a, b) -> b - a).mapToInt(p -> p).toArray();
 ```
+
+### List<Integer>,  int[]，Integer[]之间的转换
+
+总结转涉及到,int[] 中间需要intstream或者stream<Integer>
+
+Arrays.stream(int[])返回IntStream,放入Intger[]返回Stream<Integer>
+
+List-->Integer[]: list.toArray(new Integer[0]);
+
+[]-->List: asList
+
+stream<Integer>转换成List： collect(Collectors.toList())
+
+Intstream-->stream<Integer>:  boxed();
+
+stream<Integer> -->Intstream:  mapToInt(Integer::Valueof)
+
+Intstream-->int[] : toArray(int[]::new)
+
+**int[] --> List<Integer>, 中间Instream做转接**
+
+```java
+int[] data = {4, 5, 3, 6, 2, 5, 1};
+// int[] 转 List<Integer>
+List<Integer> list1 = Arrays.stream(data).boxed().collect(Collectors.toList());
+// Arrays.stream(arr) 可以替换成IntStream.of(arr)。
+// 1.使用Arrays.stream将int[]转换成IntStream。
+// 2.使用IntStream中的boxed()装箱。将IntStream转换成Stream<Integer>。
+// 3.使用Stream的collect()，将Stream<T>转换成List<T>，因此正是List<Integer>。
+```
+
+**int[]-->Integer[]**
+
+```
+Integer[] Integers1=Arrays.stream(data).boxed().toArray(Integer[]::new);
+// 前两步同上，此时是Stream<Integer>。
+// 然后使用Stream的toArray，传入IntFunction<A[]> generator。
+// 这样就可以返回Integer数组。
+// 不然默认是Object[]。
+```
+
+**List<Integer> -->Integer[]**
+
+```java
+Integer[] integer2=list1.toArray(new Integer[0]);
+```
+
+**List<Integer> -->int[]**
+
+```
+int[] arr1 = list1.stream().mapToInt(Integer::valueOf).toArray();
+// 想要转换成int[]类型，就得先转成IntStream。
+// 这里就通过mapToInt()把Stream<Integer>调用Integer::valueOf来转成IntStream
+// 而IntStream中默认toArray()转成int[]。
+```
+
+**Integer[]--> int[]**
+
+```java
+int[] arr2 = Arrays.stream(integers1).mapToInt(Integer::valueOf).toArray();
+```
+
+**Integer[] --> List<Integer>**
+
+```
+  List<Integer> list2 = Arrays.asList(integers1);
+```
+
+
+
+### queue,stack,PriorityQueue转数组
 
