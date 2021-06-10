@@ -194,10 +194,16 @@ pollFirst();
 
 ```java
 TreeSet<Integer> set=new TreeSet<>();
+set.first();
+set.last();
+set.pollLast();
+set.pollFirst();
 set.ceiling(Integer e); //第一个>=e
 set.floor(Integer e); //第一个 <=e
 set.higher(Integer e);//第一个>e的数
 set.lower(Integer e);//第一个<e
+
+
 ```
 
 
@@ -231,6 +237,7 @@ System.out.println(i);
 |        冒泡排序        | n2 但**n（改进后的算法）**      | n2           | n2       | 1                                                           |
 |        插入排序        | n                               | n2           | n2       | 1                                                           |
 |        选择排序        | n2                              | n2           | n2       | 1                                                           |
+|        计数排序        | n+k                             | n+k          | n+k      | k+n                                                         |
 |         桶排序         | n+k                             | n+k          | n2       | 1                                                           |
 | 希尔排序（shell sort） | n                               | (logn)2      | (logn)2  | 1                                                           |
 | 基数排序（radix sort)  | nk                              | nk           | nk       | n+k                                                         |
@@ -242,6 +249,8 @@ System.out.println(i);
 ![img](https://pic2.zhimg.com/80/v2-d6f818db4ff639c151242bc97ca30115_720w.jpg)
 
 递归O（logn）不开辟新空间将其排好，让一个位置保留两个信息，余数（当前指向值）和商（结果）就能实现O（1）空间复杂度
+
+填充位置k，停止条件：i>(length+1)/2
 
 ### 冒泡排序改进后最好时间复杂度O(n)
 
@@ -273,9 +282,79 @@ public void bubbleSort(int arr[]) {
 
 所以任何条件都是O(n2)
 
+## 计数排序
+
+适用于空间复杂度要求不高，数据波动范围k=(max-min+1)不大，即k<<nlgn
+
+1. 值-个数关系
+
+2. 累加获得比当前值小的数的个数
+
+3. 多个并列问题，--rank[value-min]就是当前值所在位置
+
+   ```java
+   public int[] countSort(int[] a){
+        int mn=0,mx=0,k=0;
+    for(int i=0;i<a.length;i++){
+        mn=Math.min(mn,a[i]);
+        mx=Math.max(mx,a[i]);
+    }
+    k=mx-mn+1;
+    int[] c=new int[k];
+    for(int i=0;i<a.length;i++){
+          c[a[i]-mn]++;
+      }
+    for(int i=mn+1;i<=mx;i++){
+          c[i]+=c[i-1];
+      }
+    int[] ans=new int[a.length];
+    for(int i=0;i<a.length;i++){
+           ans[--c[a[i]-mn]]=a[i];
+    }
+     return ans;
+   }
+   ```
+
 ### 基数排序
 
+从个十百千万依次计数排序
+
+单次计数排序，k=10，可以忽略不计，时间复杂度是n，空间复杂n
+
+位数是m,总时间复杂度是mn,空间复杂度n
+
+从小到大：ans扫描应该是从后往前
+
+```java
+public void bracketSort(int[] a){
+ int mx=0,len=a.length;
+ for(int i=0;i<a.length;i++){
+     mx=Math.max(mx,a[i]);
+ }
+ int m=0;//位数
+ while(mx>0){
+       m++;
+       mx/=10;
+  }
+    int M=1;
+   for(int i=0;i<m;i++){
+       int[] tmp=new int[10];//统计排位
+       int[] ans=new int[len];//本次计数排序结果
+       //统计个数
+       for(int j=0;j<len;j++) tmp[(a[i]/M)%10]++;
+       for(int j=1;j<10;j++) tmp[j]+=tmp[j-1];
+       for(int j=0;j<len;j++){
+           ans[--tmp[(a[j]/M)%10]]=a[j];
+       }
+       M*=10;
+       a=ans;
+   }
+}
+```
+
 ### 桶排序
+
+基数排序是按位，桶排序是将数划分成若干个区间
 
 ### 希尔排序
 
@@ -373,7 +452,7 @@ nums = Arrays.stream(nums).boxed().sorted((a, b) -> b - a).mapToInt(p -> p).toAr
 
 Arrays.stream(int[])返回IntStream,放入Intger[]返回Stream<Integer>
 
-List-->Integer[]: list.toArray(new Integer[0]);
+List-->Integer[]:  list.toArray(**new Integer[0]**);
 
 []-->List: asList
 
@@ -384,6 +463,8 @@ Intstream-->stream<Integer>:  boxed();
 stream<Integer> -->Intstream:  mapToInt(Integer::Valueof)
 
 Intstream-->int[] : toArray(int[]::new)
+
+List<Integer>-->int[]: list.stream()直接转换成stream<Integer>
 
 **int[] --> List<Integer>, 中间Instream做转接**
 
@@ -416,7 +497,7 @@ Integer[] integer2=list1.toArray(new Integer[0]);
 **List<Integer> -->int[]**
 
 ```
-int[] arr1 = list1.stream().mapToInt(Integer::valueOf).toArray();
+int[] arr1 =list1.stream().mapToInt(Integer::intValue).toArray();
 // 想要转换成int[]类型，就得先转成IntStream。
 // 这里就通过mapToInt()把Stream<Integer>调用Integer::valueOf来转成IntStream
 // 而IntStream中默认toArray()转成int[]。
@@ -434,7 +515,22 @@ int[] arr2 = Arrays.stream(integers1).mapToInt(Integer::valueOf).toArray();
   List<Integer> list2 = Arrays.asList(integers1);
 ```
 
+### queue,stack,PriorityQueue转数组int[]
+
+可以直接调用这些collection下的stream流转为int[]
+
+### int[]寻找最大值和最小值
 
 
-### queue,stack,PriorityQueue转数组
 
+## 遇到的坑
+
+TreeSet以下这种写法，相同的value会去掉
+
+```java
+    TreeSet<Pair<Integer, Integer>> que = new TreeSet<>((a, b) -> {
+      return a.getKey() - b.getKey();
+    });
+```
+
+在函数内部进行int[] a=ans无效果？？？ 
