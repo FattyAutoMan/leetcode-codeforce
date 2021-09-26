@@ -376,7 +376,7 @@ unicode不包括辅助平面就16位，包括就24位，1-3字节不等；是字
 
 具体如下：
 
-三个模板：0xxxxxxx ║110xxxxx 10xxxxxx║1110xxxx 10xxxxxx 10xxx10x║11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+三个模板：0xxxxxxx(7bit)║110xxxxx 10xxxxxx（11bit )║1110xxxx 10xxxxxx 10xxx10x(14bit)║11110xxx 10xxxxxx 10xxxxxx 10xxxxxx(21bit)
 
 单字节开头一定是0，128个asci用7位足够表示了
 
@@ -388,13 +388,15 @@ unicode不包括辅助平面就16位，包括就24位，1-3字节不等；是字
 
 **GBK**
 
+Chinese Internal Code Specification中文国标
+
 统一2个字节编码（16位）
 
 **java对字符的处理**
 
 1. **getBytes（charset）**
 
-  这是java字符串处理的一个标准函数，其作用是将字符串所表示的字符按照**charset编码**（编码方式），并以**字节**方式表示。注意字符串在java内存中总是按**unicode**编码存储的。比如"中文"，正常情况下（即没有错误的时候）存储为"4e2d 6587"，如果charset为"gbk"，则被编码为"d6d0 cec4"，然后返回字节"d6 d0 ce c4".如果charset为"utf8"则最后是"e4 b8 ad e6 96 87".如果是"iso8859-1"，则由于无法编码，最后返回 "3f 3f"（两个问号）。
+这是java字符串处理的一个标准函数，其作用是将字符串所表示的字符按照**charset编码**（编码方式），并以**字节**方式表示。注意字符串在java内存中总是按**unicode**编码存储的。比如"中文"，正常情况下（即没有错误的时候）存储为"4e2d 6587"，如果charset为"gbk"，则被编码为"d6d0 cec4"，然后返回字节"d6 d0 ce c4".如果charset为"utf8"则最后是"e4 b8 ad e6 96 87".如果是"iso8859-1"，则由于无法编码，最后返回 "3f 3f"（两个问号）。
 
 java文件在内存存储的是unicode，打开文件到程序员看到是通过编辑平台charset解读的。
 
@@ -446,7 +448,7 @@ Character.isDigit(s.charAt(i));
 nums = Arrays.stream(nums).boxed().sorted((a, b) -> b - a).mapToInt(p -> p).toArray();
 ```
 
-### List<Integer>,  int[]，Integer[]之间的转换
+### 流式编程List<Integer>,  int[]，Integer[]之间的转换
 
 总结转涉及到,int[] 中间需要intstream或者stream<Integer>
 
@@ -534,3 +536,16 @@ TreeSet以下这种写法，相同的value会去掉
 ```
 
 在函数内部进行int[] a=ans无效果？？？ 
+
+
+
+# 读取控制台输入
+
+https://ac.nowcoder.com/acm/contest/5657#question
+
+使用java.util.Scanner实现
+
+Scanner scanner=new Scanner(System.in);
+
+读取每一行的数,结合String str[], Integrer.parseInt()
+
